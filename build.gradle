@@ -4,6 +4,8 @@
  * It is extraordinarily rare that you will ever need to edit this file.
  */
 
+
+
 buildscript {
     repositories {
         mavenCentral()
@@ -14,6 +16,8 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.7.0'
     }
 }
+// Apply the maven-publish plugin
+apply plugin: 'maven-publish'
 
 // This is now required because aapt2 has to be downloaded from the
 // google() repository beginning with version 3.2 of the Android Gradle Plugin
@@ -21,9 +25,36 @@ allprojects {
     repositories {
         mavenCentral()
         google()
+        maven { url 'https://jitpack.io' }
     }
 }
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.github.EVEREST-23060'
+            artifactId = 'Decode--23060'
+            version = '1.1.3'
+
+            afterEvaluate {
+                // Tenta encontrar a tarefa no projeto raiz ou subprojetos
+                def aarTask = tasks.findByName('bundleReleaseAar')
+                if (aarTask == null) {
+                    // Se não encontrar, procura nos subprojetos explicitamente
+                    project.subprojects.each { subproject ->
+                        aarTask = subproject.tasks.findByName('bundleReleaseAar')
+                        if (aarTask != null) {
+                            artifact(aarTask)
+                        }
+                    }
+                } else {
+                    artifact(aarTask)
+                }
+            }
+        }
+    }
 }
